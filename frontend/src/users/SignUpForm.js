@@ -1,33 +1,32 @@
-import { useState, useEffect } from "react"
-import { useHistory, useParams } from "react-router"
+import { useState, useEffect } from "react";
+import { useHistory, useParams } from "react-router";
 
 function SignUpForm() {
+  const history = useHistory();
 
-	const history = useHistory()
+  const [user, setUser] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+  });
 
-	const [user, setUser] = useState({
-		firstName: '',
-		lastName: '',
-		email: '',
-		password: ''
-	})
+  async function handleSubmit(e) {
+    e.preventDefault();
 
-	async function handleSubmit(e) {
-		e.preventDefault()
+    await fetch(`http://localhost:5000/users/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(user),
+    });
 
-		await fetch(`http://localhost:5000/users/`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(user)
-		})
+    history.push(`/`);
+  }
 
-		history.push(`/`)
-	}
-
-	return (
-    <main style={{ paddingLeft: "25%", paddingRight: "25%" }}>
+  return (
+    <main>
       <h1>Sign Up</h1>
       <form onSubmit={handleSubmit}>
         <div className="row">
@@ -86,4 +85,4 @@ function SignUpForm() {
   );
 }
 
-export default SignUpForm
+export default SignUpForm;

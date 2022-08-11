@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const db = require("../models")
+const jwt = require("jsonwebtoken")
 
 const { Place, Comment, User } = db
 
@@ -81,37 +82,58 @@ router.delete('/:placeId', async (req, res) => {
     }
 })
 
-router.post('/:placeId/comments', async (req, res) => {
-    const placeId = Number(req.params.placeId)
+  
 
-    req.body.rant = req.body.rant ? true : false
+router.post("/:placeId/comments", async (req, res) => {
+  const placeId = Number(req.params.placeId);
 
-    const place = await Place.findOne({
-        where: { placeId: placeId }
-    })
+  req.body.rant = req.body.rant ? true : false;
 
-    if (!place) {
-        res.status(404).json({ message: `Could not find place with id "${placeId}"` })
+  const place = await Place.findOne({
+    where: { placeId: placeId },
+  });
+
+  if (!place) {
+    return res
+      .status(404)
+      .json({ message: `Could not find place with id "${placeId}"` });
+  }
+
+  let currentUser;
+  try {
+    const [method, token] = req.headers.authorization.split(" ");
+    if (method == "Bearer") {
+      const result = await jwt.decode(process.env.JWT_SECRET, token);
+      const { id } = result.value;
+      currentUser = await User.findOne({
+        where: {
+          userId: id,
+        },
+      });
     }
+  } catch {
+    currentUser = null;
+  }
 
-    const author = await User.findOne({
-        where: { userId: req.body.authorId }
-    })
+  if (!currentUser) {
+    return res.status(404).json({
+      message: `You must be logged in to leave a rant or rave.`,
+    });
+  }
 
-    if (!author) {
-        res.status(404).json({ message: `Could not find author with id "${req.body.authorId}"` })
-    }
+  const comment = await Comment.create({
+    ...req.body,
+    authorId: currentUser.userId,
+    placeId: placeId,
+  });
 
-    const comment = await Comment.create({
-        ...req.body,
-        placeId: placeId
-    })
+  res.send({
+    ...comment.toJSON(),
+    author: currentUser,
+  });
+});
 
-    res.send({
-        ...comment.toJSON(),
-        author
-    })
-})
+
 
 router.delete('/:placeId/comments/:commentId', async (req, res) => {
     let placeId = Number(req.params.placeId)
