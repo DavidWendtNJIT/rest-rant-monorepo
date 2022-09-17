@@ -6,7 +6,7 @@ function Home() {
         <img
           height="300"
           width="500"
-          src="http://localhost:5000/images/chia-fruit-drink.jpg"
+          src={process.env.REACT_APP_SERVER_URL + 'images/chia-fruit-drink.jpg'}
           alt="Chia Fruit Shake"
         />
         <div>

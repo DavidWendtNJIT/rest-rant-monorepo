@@ -16,13 +16,17 @@ function NewPlaceForm() {
 	async function handleSubmit(e) {
 		e.preventDefault()
 
-		await fetch(`http://localhost:5000/places`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(place)
-		})
+		await fetch(
+      `${process.env.REACT_APP_SERVER_URL}
+/places`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(place),
+      }
+    );
 
 		history.push('/places')
 	}
